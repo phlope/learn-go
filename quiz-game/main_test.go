@@ -39,7 +39,7 @@ func TestFileReader(t *testing.T) {
 		{"one", "two"},
 	}
 
-	testFile := "test.csv"
+	testFile := "test-data.csv"
 	output := fileReader(testFile)
 
 	//Test return type
