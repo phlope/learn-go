@@ -22,17 +22,21 @@ func main() {
 	duration := flag.Int("t", 60, "Quiz timer total seconds")
 	flag.Parse()
 
-	rows := fileReader(*filepath)
-	questions := parseRows(rows)
+	rows, err := fileReader(*filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	questions, err := parseRows(rows)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	timer := time.NewTimer(time.Duration(*duration) * time.Second)
 
 	for i, problem := range questions {
 		fmt.Println(i+1, problem.question)
 
-		//Using concurrency guidance from solution here
-		//Moving scan to a new go routine sending the response back via new channel ansCh
-		//Now each case reacts on a response from either channel and the timer end is no longer blocked on user response
 		ansCh := make(chan string)
 		go func() {
 			fmt.Scan(&input)
@@ -41,41 +45,54 @@ func main() {
 
 		select {
 		case <-timer.C:
-			fmt.Printf("You scored %v out of %v", score, len(questions))
-			return
+			break
 		case input := <-ansCh:
 			if input == problem.answer {
 				score += 1
 			}
+			if i == len(questions)-1 {
+				break
+			}
 		}
-
 	}
+	fmt.Printf("You scored %v out of %v", score, len(questions))
 
 }
 
-func parseRows(rows [][]string) []problem {
+func parseRows(rows [][]string) ([]problem, error) {
+	var err error
+
 	problems := make([]problem, len(rows))
 	for i, row := range rows {
+		if len(row) != 2 {
+			return problems, fmt.Errorf("unexpected element content, expected question and answer, got: %v", row)
+		}
 		problems[i] = problem{
 			question: row[0],
 			answer:   row[1],
 		}
+
 	}
-	return problems
+	return problems, err
 }
 
-func fileReader(filepath string) [][]string {
+func fileReader(filepath string) ([][]string, error) {
+	var rows [][]string
+	var err error
+
 	file, err := os.Open(filepath)
 	if err != nil {
-		log.Fatalf("Unable to open file %v, %v", file, err)
+		return rows, fmt.Errorf("unable to open file from %s, %v", filepath, err)
+
 	}
 
 	reader := csv.NewReader(file)
 	reader.TrimLeadingSpace = true
-	rows, err := reader.ReadAll()
+
+	rows, err = reader.ReadAll()
 	if err != nil {
-		log.Fatalf("Unable to read file %v, %v", reader, err)
+		return rows, fmt.Errorf("unable to read csv from %v, %v", file, err)
 	}
 
-	return rows
+	return rows, err
 }

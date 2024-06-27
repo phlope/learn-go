@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseRow(t *testing.T) {
@@ -14,7 +17,7 @@ func TestParseRow(t *testing.T) {
 		{"one", "two"},
 	}
 
-	output := parseRows(rows)
+	output, _ := parseRows(rows)
 
 	// Test return type
 	if reflect.TypeOf(output) != reflect.TypeOf(expected) {
@@ -26,9 +29,20 @@ func TestParseRow(t *testing.T) {
 		log.Fatalf("parseRows(%v) output length %v does not equal expected length: %v", len(output), rows, len(expected))
 	}
 
-	// Test value of return slice element
-	if output[0] != expected[0] {
+	// Test equality assert on return value rather than index comparison
+	if !assert.Equal(t, output, expected) {
 		log.Fatalf("parseRows(%v) output value: %v not equal to expected value: %v", rows, output[0], expected[0])
+	}
+
+	// Test error handing with invalid rows
+	invalidRows := [][]string{
+		{"one", "two", "three"},
+	}
+	_, err := parseRows(invalidRows)
+	expectedErr := fmt.Errorf("unexpected element content, expected question and answer, got: [one two three]")
+
+	if !assert.Equal(t, err, expectedErr) {
+		log.Fatalf("returned error:\n%v\ndid not equal expected:\n%v", err, expectedErr)
 	}
 }
 
@@ -40,7 +54,7 @@ func TestFileReader(t *testing.T) {
 	}
 
 	testFile := "test-data.csv"
-	output := fileReader(testFile)
+	output, _ := fileReader(testFile)
 
 	//Test return type
 	if reflect.TypeOf(output) != reflect.TypeOf(expected) {
@@ -52,12 +66,16 @@ func TestFileReader(t *testing.T) {
 		log.Fatalf("fileReader(%v) output length: %v does not equal expected length: %v", testFile, len(output), len(expected))
 	}
 
-	//Compare each slice element
-	for i := range output {
-		for j := range output[i] {
-			if output[i][j] != expected[i][j] {
-				log.Fatalf("parseRows(%v) output value: %v not equal to expected value: %v", testFile, output[i][j], expected[i][j])
-			}
-		}
+	// Test equality assert on return value rather than index comparison
+	if !assert.Equal(t, output, expected) {
+		log.Fatalf("parseRows(%v) output value: %v not equal to expected value: %v", testFile, output[0], expected[0])
+	}
+
+	// Test error handing with invalid filepath
+	_, err := fileReader("invalidFilepath")
+	expectedErr := fmt.Errorf("unable to open file from invalidFilepath, open invalidFilepath: no such file or directory")
+
+	if !assert.Equal(t, err, expectedErr) {
+		log.Fatalf("returned error:\n%v\ndid not equal expected:\n%v", err, expectedErr)
 	}
 }
