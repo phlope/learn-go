@@ -94,7 +94,7 @@ func day1Pt2(filepath string) (int, error) {
 		var first, last int
 
 		for i := range line {
-			extracted, isNum := extractDigitPt2(line[i:])
+			extracted, isNum := extractDigitPt2(line[i:]) // add subslice check to loop e.g. 0, 1, 2, 3 | 1, 2, 3 | 2, 3 ...
 			if isNum {
 				first = extracted
 				break
@@ -143,7 +143,7 @@ func extractDigitPt2(line string) (int, bool) {
 
 	for i, num := range numbers {
 		if strings.HasPrefix(line, num) {
-			return i + 1, true
+			return i + 1, true // using index instead of parsing string value to int
 		}
 	}
 
