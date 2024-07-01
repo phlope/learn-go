@@ -9,34 +9,55 @@ import (
 )
 
 func main() {
-	total, err := day1Pt1("input.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Day 1, Part 1: %d", total)
 
-	total, err = day1Pt2("input.txt")
+	// DAY 1
+
+	// PART 1
+	day1File, err := openFile("input-day-1.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("\nDay 1, Part 2: %d", total)
+	total, err := day1Pt1(day1File)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Day 1, Part 1: %d\n", total)
+
+	// PART 2
+	day1File, err = openFile("input-day-1.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	total, err = day1Pt2(day1File)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Day 1, Part 2: %d\n", total)
+
+	// DAY 2
+	// PART 1
+	day2File, err := openFile("input-day-2.txt")
+
+	day2Pt1(day2File)
 }
 
-func day1Pt1(filepath string) (int, error) {
-	var err error
+func openFile(filepath string) (os.File, error) {
 	file, err := os.Open(filepath)
 	if err != nil {
-		return 0, fmt.Errorf("unable to open file %v, %v", file, err)
+		return *file, fmt.Errorf("unable to open file %v, %v", file, err)
 	}
+	return *file, err
+}
 
-	scanner := bufio.NewScanner(file)
-
+func day1Pt1(file os.File) (int, error) {
+	var err error
 	sum := 0
+	var first, last int
+
+	scanner := bufio.NewScanner(&file)
 
 	for scanner.Scan() {
 		line := scanner.Text()
-
-		var first, last int
 
 		for i := range line {
 			extracted, isNum := extractDigitPt1(line[i])
@@ -73,25 +94,15 @@ func extractDigitPt1(char byte) (int, bool) {
 	}
 }
 
-/* Duplicating the day 1 function to keep a history of steps taken for pt1 and 2
-   To clean up as this progesses
-*/
-
-func day1Pt2(filepath string) (int, error) {
+func day1Pt2(file os.File) (int, error) {
 	var err error
-	file, err := os.Open(filepath)
-	if err != nil {
-		return 0, fmt.Errorf("unable to open file %v, %v", file, err)
-	}
-
-	scanner := bufio.NewScanner(file)
-
+	var first, last int
 	sum := 0
+
+	scanner := bufio.NewScanner(&file)
 
 	for scanner.Scan() {
 		line := scanner.Text()
-
-		var first, last int
 
 		for i := range line {
 			extracted, isNum := extractDigitPt2(line[i:]) // add subslice check to loop e.g. 0, 1, 2, 3 | 1, 2, 3 | 2, 3 ...
@@ -148,4 +159,15 @@ func extractDigitPt2(line string) (int, bool) {
 	}
 
 	return expected, isNum
+}
+
+func day2Pt1(file os.File) {
+
+	scanner := bufio.NewScanner(&file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		fmt.Println(line)
+
+	}
 }
