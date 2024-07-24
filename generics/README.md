@@ -8,4 +8,4 @@ https://go.dev/doc/tutorial/generics
 
 ```
 go run .
-```g
+```
